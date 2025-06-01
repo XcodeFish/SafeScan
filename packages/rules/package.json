@@ -1,0 +1,17 @@
+{
+  "name": "@safescan/rules",
+  "version": "0.1.0",
+  "description": "SafeScan安全规则库",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.8.10",
+    "typescript": "^5.2.2"
+  }
+}
