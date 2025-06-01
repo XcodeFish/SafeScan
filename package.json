@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "前端安全扫描与检测工具",
+  "type": "module",
   "workspaces": [
     "packages/*"
   ],
@@ -13,7 +14,11 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "lint-staged": "lint-staged",
+    "verify": "pnpm lint && pnpm type-check && pnpm format",
+    "verify:commit": "node scripts/verify-commit-setup.js",
+    "help": "node scripts/help.js"
   },
   "engines": {
     "node": ">=16.0.0",
@@ -25,6 +30,7 @@
     "@types/node": "^20.8.10",
     "@typescript-eslint/eslint-plugin": "^6.9.1",
     "@typescript-eslint/parser": "^6.9.1",
+    "chalk": "^5.4.1",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.6.1",
