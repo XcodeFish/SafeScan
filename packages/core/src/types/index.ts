@@ -20,6 +20,10 @@ export interface IRule {
   detect: (ast: TAST, context: TRuleContext) => TRuleResult[];
   /** 规则自动修复函数 */
   fix?: (result: TRuleResult, ast: TAST, context: TRuleContext) => TFixResult;
+  /** 原始严重程度（在配置覆盖后保留） */
+  _originalSeverity?: RuleSeverity;
+  /** 规则是否被禁用 */
+  _disabled?: boolean;
 }
 
 // 规则类别
@@ -93,6 +97,8 @@ export interface RuleConfig {
   severity?: RuleSeverity;
   /** 特定规则配置 */
   options?: Record<string, any>;
+  /** 配置注释 */
+  _comment?: string;
 }
 
 // 缓存配置

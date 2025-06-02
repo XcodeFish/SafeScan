@@ -141,13 +141,13 @@ export class FixEngine {
                 type: FixOperationType.REPLACE,
                 start: this.getPositionOffset(
                   sourceCode,
-                  result.location.startLine,
-                  result.location.startColumn
+                  result.location.start.line,
+                  result.location.start.column
                 ),
                 end: this.getPositionOffset(
                   sourceCode,
-                  result.location.endLine,
-                  result.location.endColumn
+                  result.location.end.line,
+                  result.location.end.column
                 ),
                 content: result.fixSuggestion,
                 description: `替换代码以修复 ${result.ruleId} 问题`,
@@ -183,13 +183,13 @@ export class FixEngine {
     const fixId = `${result.ruleId}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
     const startOffset = this.getPositionOffset(
       sourceCode,
-      result.location.startLine,
-      result.location.startColumn
+      result.location.start.line,
+      result.location.start.column
     );
     const endOffset = this.getPositionOffset(
       sourceCode,
-      result.location.endLine,
-      result.location.endColumn
+      result.location.end.line,
+      result.location.end.column
     );
     const problematicCode = sourceCode.substring(startOffset, endOffset);
 
