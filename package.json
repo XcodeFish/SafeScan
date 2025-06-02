@@ -14,6 +14,8 @@
     "test:unit": "vitest run --config vitest.config.ts tests/unit",
     "test:integration": "vitest run --config vitest.config.ts tests/integration",
     "test:e2e": "vitest run --config vitest.config.ts tests/e2e",
+    "test:memory": "bash scripts/run-memory-tests.sh",
+    "test:memory:coverage": "vitest run --coverage tests/integration/reference-chain.test.ts tests/integration/leak-pattern.test.ts tests/integration/memory-analyzer.test.ts",
     "lint": "eslint --ext .ts,.tsx packages/*/src",
     "typecheck": "tsc --noEmit",
     "prepare": "husky install"

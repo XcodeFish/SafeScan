@@ -1,0 +1,898 @@
+{
+  "result": [
+    {
+      "scriptId": "420",
+      "url": "file:///Users/guobinbin/project/SafeScan/tests/integration/leak-pattern.test.ts",
+      "functions": [
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 0, "endOffset": 26550, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 13, "endOffset": 26550, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "createTestLeakDetectionResult",
+          "ranges": [{ "startOffset": 1039, "endOffset": 3080, "count": 2 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 3124, "endOffset": 8636, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 3175, "endOffset": 4533, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [
+            { "startOffset": 3234, "endOffset": 3771, "count": 1 },
+            { "startOffset": 3765, "endOffset": 3770, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 3820, "endOffset": 4527, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 4262, "endOffset": 4342, "count": 2 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 4582, "endOffset": 6976, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [
+            { "startOffset": 4640, "endOffset": 6970, "count": 1 },
+            { "startOffset": 6850, "endOffset": 6964, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 6737, "endOffset": 6794, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 7022, "endOffset": 8632, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 7075, "endOffset": 8626, "count": 1 }],
+          "isBlockCoverage": true
+        }
+      ]
+    },
+    {
+      "scriptId": "422",
+      "url": "file:///Users/guobinbin/project/SafeScan/packages/core/src/analyzer/memory/leak.ts",
+      "functions": [
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 0, "endOffset": 50144, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 13, "endOffset": 50144, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 533, "endOffset": 759, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 882, "endOffset": 910, "count": 399 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 953, "endOffset": 1623, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 1752, "endOffset": 1783, "count": 34 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "detectMemoryLeak",
+          "ranges": [{ "startOffset": 2184, "endOffset": 3756, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 3861, "endOffset": 3893, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "analyzeLeakPatterns",
+          "ranges": [{ "startOffset": 3897, "endOffset": 4796, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "determineLeakPattern",
+          "ranges": [{ "startOffset": 4797, "endOffset": 7357, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "generateLeakGuidance",
+          "ranges": [{ "startOffset": 7358, "endOffset": 9977, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "formatBytes",
+          "ranges": [{ "startOffset": 9978, "endOffset": 10239, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "getSeverityValue",
+          "ranges": [{ "startOffset": 10240, "endOffset": 10564, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "extractComponentInfo",
+          "ranges": [{ "startOffset": 10565, "endOffset": 10787, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "determineFramework",
+          "ranges": [{ "startOffset": 10788, "endOffset": 11390, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "detectComponentLeak",
+          "ranges": [{ "startOffset": 11391, "endOffset": 13862, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 13970, "endOffset": 14005, "count": 0 }],
+          "isBlockCoverage": false
+        }
+      ]
+    },
+    {
+      "scriptId": "423",
+      "url": "file:///Users/guobinbin/project/SafeScan/packages/core/src/types/index.ts",
+      "functions": [
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 0, "endOffset": 7359, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 13, "endOffset": 7359, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 221, "endOffset": 499, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 622, "endOffset": 650, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 690, "endOffset": 916, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 1039, "endOffset": 1067, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 1104, "endOffset": 1350, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 1467, "endOffset": 1492, "count": 18 }],
+          "isBlockCoverage": true
+        }
+      ]
+    },
+    {
+      "scriptId": "424",
+      "url": "file:///Users/guobinbin/project/SafeScan/packages/core/src/analyzer/memory/snapshot.ts",
+      "functions": [
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 0, "endOffset": 30813, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 13, "endOffset": 30813, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 525, "endOffset": 1165, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 1296, "endOffset": 1328, "count": 83 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "getMemoryInfo",
+          "ranges": [{ "startOffset": 1558, "endOffset": 2177, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 2279, "endOffset": 2308, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "generateUniqueId",
+          "ranges": [{ "startOffset": 2312, "endOffset": 2503, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "createSnapshot",
+          "ranges": [{ "startOffset": 2504, "endOffset": 3251, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 3354, "endOffset": 3384, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "getSnapshot",
+          "ranges": [{ "startOffset": 3388, "endOffset": 3464, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 3564, "endOffset": 3591, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "deleteSnapshot",
+          "ranges": [{ "startOffset": 3595, "endOffset": 3677, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 3780, "endOffset": 3810, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "compareSnapshots",
+          "ranges": [{ "startOffset": 3814, "endOffset": 5653, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 5758, "endOffset": 5790, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "identifyLeakCandidates",
+          "ranges": [{ "startOffset": 5794, "endOffset": 6601, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "analyzeReferenceChain",
+          "ranges": [{ "startOffset": 6602, "endOffset": 7575, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 7685, "endOffset": 7722, "count": 0 }],
+          "isBlockCoverage": false
+        }
+      ]
+    },
+    {
+      "scriptId": "425",
+      "url": "file:///Users/guobinbin/project/SafeScan/packages/core/src/cache/memory.ts",
+      "functions": [
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 0, "endOffset": 12655, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 13, "endOffset": 12655, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "LRUCache",
+          "ranges": [
+            { "startOffset": 254, "endOffset": 461, "count": 4 },
+            { "startOffset": 361, "endOffset": 367, "count": 1 },
+            { "startOffset": 444, "endOffset": 456, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "getFullKey",
+          "ranges": [{ "startOffset": 534, "endOffset": 594, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 668, "endOffset": 982, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "set",
+          "ranges": [{ "startOffset": 1050, "endOffset": 1286, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "has",
+          "ranges": [{ "startOffset": 1361, "endOffset": 1632, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "delete",
+          "ranges": [{ "startOffset": 1699, "endOffset": 1797, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "clear",
+          "ranges": [{ "startOffset": 1822, "endOffset": 1859, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "size",
+          "ranges": [{ "startOffset": 1886, "endOffset": 1926, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "evictOldest",
+          "ranges": [{ "startOffset": 1955, "endOffset": 2268, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "prune",
+          "ranges": [{ "startOffset": 2318, "endOffset": 2560, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 2659, "endOffset": 2683, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "getCache",
+          "ranges": [{ "startOffset": 2934, "endOffset": 3103, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 3200, "endOffset": 3224, "count": 1 }],
+          "isBlockCoverage": true
+        }
+      ]
+    },
+    {
+      "scriptId": "426",
+      "url": "file:///Users/guobinbin/project/SafeScan/packages/core/src/analyzer/memory/leak-pattern.ts",
+      "functions": [
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 0, "endOffset": 58407, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 13, "endOffset": 58407, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "registerReactLeakFeatures",
+          "ranges": [{ "startOffset": 2137, "endOffset": 8690, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "detect",
+          "ranges": [
+            { "startOffset": 2301, "endOffset": 2405, "count": 6 },
+            { "startOffset": 2371, "endOffset": 2405, "count": 1 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "detect",
+          "ranges": [
+            { "startOffset": 2787, "endOffset": 2902, "count": 6 },
+            { "startOffset": 2867, "endOffset": 2902, "count": 1 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "detect",
+          "ranges": [
+            { "startOffset": 3296, "endOffset": 3414, "count": 6 },
+            { "startOffset": 3372, "endOffset": 3414, "count": 1 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "detect",
+          "ranges": [
+            { "startOffset": 3812, "endOffset": 3921, "count": 9 },
+            { "startOffset": 3879, "endOffset": 3921, "count": 2 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "detect",
+          "ranges": [
+            { "startOffset": 4334, "endOffset": 4667, "count": 6 },
+            { "startOffset": 4426, "endOffset": 4457, "count": 5 },
+            { "startOffset": 4457, "endOffset": 4511, "count": 1 },
+            { "startOffset": 4652, "endOffset": 4660, "count": 1 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 4521, "endOffset": 4618, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "detect",
+          "ranges": [
+            { "startOffset": 5073, "endOffset": 5222, "count": 6 },
+            { "startOffset": 5142, "endOffset": 5184, "count": 1 },
+            { "startOffset": 5185, "endOffset": 5222, "count": 1 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "detect",
+          "ranges": [
+            { "startOffset": 5640, "endOffset": 5804, "count": 6 },
+            { "startOffset": 5685, "endOffset": 5795, "count": 1 },
+            { "startOffset": 5796, "endOffset": 5804, "count": 5 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [
+            { "startOffset": 5724, "endOffset": 5789, "count": 1 },
+            { "startOffset": 5758, "endOffset": 5789, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "detect",
+          "ranges": [
+            { "startOffset": 6214, "endOffset": 6418, "count": 6 },
+            { "startOffset": 6257, "endOffset": 6409, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 6296, "endOffset": 6403, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "detect",
+          "ranges": [
+            { "startOffset": 6804, "endOffset": 6905, "count": 6 },
+            { "startOffset": 6873, "endOffset": 6905, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "detect",
+          "ranges": [
+            { "startOffset": 7318, "endOffset": 7516, "count": 6 },
+            { "startOffset": 7447, "endOffset": 7472, "count": 0 },
+            { "startOffset": 7473, "endOffset": 7516, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "detect",
+          "ranges": [
+            { "startOffset": 7910, "endOffset": 8414, "count": 6 },
+            { "startOffset": 8156, "endOffset": 8210, "count": 0 },
+            { "startOffset": 8211, "endOffset": 8215, "count": 0 },
+            { "startOffset": 8255, "endOffset": 8261, "count": 0 },
+            { "startOffset": 8262, "endOffset": 8266, "count": 0 },
+            { "startOffset": 8310, "endOffset": 8355, "count": 0 },
+            { "startOffset": 8356, "endOffset": 8359, "count": 0 },
+            { "startOffset": 8379, "endOffset": 8398, "count": 0 },
+            { "startOffset": 8399, "endOffset": 8407, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "isCyclicReference",
+          "ranges": [{ "startOffset": 8691, "endOffset": 8979, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "getSeverityValue",
+          "ranges": [
+            { "startOffset": 8980, "endOffset": 9393, "count": 111 },
+            { "startOffset": 9044, "endOffset": 9109, "count": 0 },
+            { "startOffset": 9114, "endOffset": 9175, "count": 21 },
+            { "startOffset": 9180, "endOffset": 9243, "count": 30 },
+            { "startOffset": 9248, "endOffset": 9308, "count": 60 },
+            { "startOffset": 9313, "endOffset": 9358, "count": 0 },
+            { "startOffset": 9363, "endOffset": 9387, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "getHighestSeverity",
+          "ranges": [
+            { "startOffset": 9394, "endOffset": 9995, "count": 1 },
+            { "startOffset": 9467, "endOffset": 9524, "count": 0 },
+            { "startOffset": 9658, "endOffset": 9723, "count": 0 },
+            { "startOffset": 9794, "endOffset": 9857, "count": 0 },
+            { "startOffset": 9862, "endOffset": 9922, "count": 0 },
+            { "startOffset": 9927, "endOffset": 9989, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "identifyLeakPattern",
+          "ranges": [
+            { "startOffset": 10025, "endOffset": 12172, "count": 10 },
+            { "startOffset": 10200, "endOffset": 10281, "count": 3 },
+            { "startOffset": 10282, "endOffset": 10296, "count": 7 },
+            { "startOffset": 10341, "endOffset": 10908, "count": 80 },
+            { "startOffset": 10368, "endOffset": 10417, "count": 77 },
+            { "startOffset": 10419, "endOffset": 10442, "count": 11 },
+            { "startOffset": 10442, "endOffset": 10470, "count": 69 },
+            { "startOffset": 10470, "endOffset": 10546, "count": 55 },
+            { "startOffset": 10548, "endOffset": 10571, "count": 0 },
+            { "startOffset": 10571, "endOffset": 10629, "count": 69 },
+            { "startOffset": 10629, "endOffset": 10826, "count": 7 },
+            { "startOffset": 10703, "endOffset": 10818, "count": 5 },
+            { "startOffset": 10833, "endOffset": 10904, "count": 0 },
+            { "startOffset": 10945, "endOffset": 10967, "count": 3 },
+            { "startOffset": 10967, "endOffset": 11094, "count": 7 },
+            { "startOffset": 11094, "endOffset": 11101, "count": 2 },
+            { "startOffset": 11160, "endOffset": 11166, "count": 2 },
+            { "startOffset": 11169, "endOffset": 11191, "count": 6 },
+            { "startOffset": 11191, "endOffset": 11778, "count": 1 },
+            { "startOffset": 11779, "endOffset": 11820, "count": 0 },
+            { "startOffset": 12024, "endOffset": 12153, "count": 0 },
+            { "startOffset": 12153, "endOffset": 12171, "count": 1 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 10222, "endOffset": 10280, "count": 33 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 11235, "endOffset": 11255, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 11358, "endOffset": 11375, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 11482, "endOffset": 11521, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 12280, "endOffset": 12315, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "getMostCommonValue",
+          "ranges": [{ "startOffset": 12319, "endOffset": 12663, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 12387, "endOffset": 12464, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "generatePatternDescription",
+          "ranges": [
+            { "startOffset": 12664, "endOffset": 13100, "count": 1 },
+            { "startOffset": 12746, "endOffset": 12809, "count": 0 },
+            { "startOffset": 12915, "endOffset": 12972, "count": 0 },
+            { "startOffset": 13002, "endOffset": 13076, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "generateFixSuggestions",
+          "ranges": [
+            { "startOffset": 13101, "endOffset": 13464, "count": 1 },
+            { "startOffset": 13174, "endOffset": 13232, "count": 0 },
+            { "startOffset": 13305, "endOffset": 13463, "count": 0 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 13374, "endOffset": 13413, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "analyzeLeakPatterns",
+          "ranges": [
+            { "startOffset": 13465, "endOffset": 14596, "count": 5 },
+            { "startOffset": 13585, "endOffset": 13623, "count": 2 },
+            { "startOffset": 13676, "endOffset": 13700, "count": 0 },
+            { "startOffset": 13764, "endOffset": 14538, "count": 10 },
+            { "startOffset": 13871, "endOffset": 14489, "count": 1 },
+            { "startOffset": 14308, "endOffset": 14325, "count": 0 },
+            { "startOffset": 14327, "endOffset": 14483, "count": 0 },
+            { "startOffset": 14489, "endOffset": 14534, "count": 9 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 14245, "endOffset": 14256, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 14704, "endOffset": 14739, "count": 5 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "getLeakStats",
+          "ranges": [{ "startOffset": 14743, "endOffset": 14797, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 14898, "endOffset": 14926, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "resetLeakStats",
+          "ranges": [{ "startOffset": 14930, "endOffset": 15337, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 15440, "endOffset": 15470, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "formatBytes",
+          "ranges": [{ "startOffset": 15474, "endOffset": 15735, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "registerUserFeedback",
+          "ranges": [{ "startOffset": 15736, "endOffset": 16347, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 16456, "endOffset": 16492, "count": 0 }],
+          "isBlockCoverage": false
+        }
+      ]
+    },
+    {
+      "scriptId": "427",
+      "url": "file:///Users/guobinbin/project/SafeScan/tests/utils/test-helpers.ts",
+      "functions": [
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 0, "endOffset": 25628, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 13, "endOffset": 25628, "count": 1 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "delay",
+          "ranges": [{ "startOffset": 487, "endOffset": 544, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 639, "endOffset": 660, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "createControlledPromise",
+          "ranges": [{ "startOffset": 664, "endOffset": 859, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 971, "endOffset": 1010, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "createMockEventHandler",
+          "ranges": [{ "startOffset": 1014, "endOffset": 1124, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 1235, "endOffset": 1273, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "mockConsole",
+          "ranges": [{ "startOffset": 1277, "endOffset": 1934, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 2034, "endOffset": 2061, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "catchError",
+          "ranges": [{ "startOffset": 2065, "endOffset": 2181, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 2280, "endOffset": 2306, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "createMockFile",
+          "ranges": [{ "startOffset": 2310, "endOffset": 2555, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 2658, "endOffset": 2688, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "mockFetch",
+          "ranges": [{ "startOffset": 2692, "endOffset": 3534, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 3632, "endOffset": 3657, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "createTestStorage",
+          "ranges": [{ "startOffset": 3661, "endOffset": 4281, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 4387, "endOffset": 4420, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "mockTimers",
+          "ranges": [{ "startOffset": 4424, "endOffset": 4792, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 4891, "endOffset": 4917, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "mockFs",
+          "ranges": [{ "startOffset": 4921, "endOffset": 5889, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 5984, "endOffset": 6006, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "createTestEnvironment",
+          "ranges": [{ "startOffset": 6010, "endOffset": 6295, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 6405, "endOffset": 6442, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "createReportDir",
+          "ranges": [{ "startOffset": 6446, "endOffset": 6762, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 6866, "endOffset": 6897, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "createTempFile",
+          "ranges": [{ "startOffset": 6901, "endOffset": 7338, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 7441, "endOffset": 7471, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "generateId",
+          "ranges": [{ "startOffset": 7475, "endOffset": 7554, "count": 15 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 7653, "endOffset": 7679, "count": 0 }],
+          "isBlockCoverage": false
+        },
+        {
+          "functionName": "mockMemoryObject",
+          "ranges": [{ "startOffset": 7683, "endOffset": 7850, "count": 11 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 7955, "endOffset": 7987, "count": 11 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "mockMemorySnapshot",
+          "ranges": [
+            { "startOffset": 7991, "endOffset": 8460, "count": 4 },
+            { "startOffset": 8089, "endOffset": 8225, "count": 11 }
+          ],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "",
+          "ranges": [{ "startOffset": 8380, "endOffset": 8408, "count": 11 }],
+          "isBlockCoverage": true
+        },
+        {
+          "functionName": "get",
+          "ranges": [{ "startOffset": 8567, "endOffset": 8601, "count": 4 }],
+          "isBlockCoverage": true
+        }
+      ]
+    }
+  ]
+}

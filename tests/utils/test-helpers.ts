@@ -2,6 +2,7 @@
  * 测试辅助工具函数
  */
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { vi } from 'vitest';
 
@@ -219,6 +220,99 @@ export function createTestEnvironment() {
     cleanup: () => {
       cleanupFns.forEach((fn) => fn());
       cleanupFns.length = 0;
+    },
+  };
+}
+
+/**
+ * 创建临时报告目录
+ * @param dirName 目录名称
+ * @returns 目录路径
+ */
+export function createReportDir(dirName: string): string {
+  const tmpDir = os.tmpdir();
+  const reportDir = path.join(tmpDir, 'safescan-tests', dirName);
+
+  // 创建目录
+  if (!fs.existsSync(reportDir)) {
+    fs.mkdirSync(reportDir, { recursive: true });
+  }
+
+  return reportDir;
+}
+
+/**
+ * 创建临时文件
+ * @param fileName 文件名
+ * @param content 文件内容
+ * @returns 文件路径
+ */
+export function createTempFile(fileName: string, content: string): string {
+  const tmpDir = os.tmpdir();
+  const filePath = path.join(tmpDir, 'safescan-tests', fileName);
+
+  // 创建目录
+  const dirPath = path.dirname(filePath);
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+
+  // 写入文件
+  fs.writeFileSync(filePath, content);
+
+  return filePath;
+}
+
+/**
+ * 随机生成ID
+ * @returns 随机ID
+ */
+export function generateId(): string {
+  return Math.random().toString(36).substring(2, 15);
+}
+
+/**
+ * 模拟内存对象
+ * @param type 对象类型
+ * @param name 对象名称
+ * @param size 对象大小
+ * @returns 模拟的内存对象
+ */
+export function mockMemoryObject(type: string, name: string, size: number = 1024): any {
+  return {
+    id: generateId(),
+    type,
+    name,
+    size,
+    metadata: {},
+    outgoingReferences: [],
+  };
+}
+
+/**
+ * 模拟内存快照
+ * @param objects 内存对象数组
+ * @returns 模拟的内存快照
+ */
+export function mockMemorySnapshot(objects: any[] = []): any {
+  // 从对象中收集所有引用关系
+  const references = [];
+
+  // 遍历所有对象，收集outgoingReferences
+  for (const obj of objects) {
+    if (obj.outgoingReferences && Array.isArray(obj.outgoingReferences)) {
+      references.push(...obj.outgoingReferences);
+    }
+  }
+
+  return {
+    id: generateId(),
+    timestamp: Date.now(),
+    objects,
+    references, // 添加引用关系数组
+    heapStats: {
+      totalSize: objects.reduce((sum, obj) => sum + obj.size, 0),
+      objectCount: objects.length,
     },
   };
 }
