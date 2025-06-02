@@ -26,15 +26,19 @@
   "settings": {
     "import/resolver": {
       "typescript": {
-        "project": "tsconfig.json"
+        "project": "tsconfig.json",
+        "alwaysTryTypes": true,
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
       },
       "node": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+        "extensions": [".js", ".jsx", ".ts", ".tsx"],
+        "paths": ["packages"]
       }
     }
   },
   "parserOptions": {
     "ecmaVersion": 2020,
-    "sourceType": "module"
+    "sourceType": "module",
+    "project": "./tsconfig.json"
   }
 }

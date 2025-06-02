@@ -1,7 +1,7 @@
 import { resolve } from 'path';
-// import { defineConfig } from 'vitest';
+import { defineConfig } from 'vitest/config';
 
-export default {
+export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
@@ -26,6 +26,10 @@ export default {
       '@safescan/plugins': resolve(__dirname, 'packages/plugins/src'),
       '@safescan/integrations': resolve(__dirname, 'packages/integrations/src'),
       '@safescan/rules': resolve(__dirname, 'packages/rules/src'),
+      '@safescan/core/*': resolve(__dirname, 'packages/core/src/*'),
+      '@safescan/plugins/*': resolve(__dirname, 'packages/plugins/src/*'),
+      '@safescan/integrations/*': resolve(__dirname, 'packages/integrations/src/*'),
+      '@safescan/rules/*': resolve(__dirname, 'packages/rules/src/*'),
     },
   },
-};
+});

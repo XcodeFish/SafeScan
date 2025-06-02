@@ -15,7 +15,11 @@
     "baseUrl": ".",
     "lib": ["ES2020", "DOM"],
     "paths": {
-      "@safescan/*": ["packages/*/src"]
+      "@safescan/*": ["packages/*/src"],
+      "@safescan/core/*": ["packages/core/src/*"],
+      "@safescan/plugins/*": ["packages/plugins/src/*"],
+      "@safescan/integrations/*": ["packages/integrations/src/*"],
+      "@safescan/rules/*": ["packages/rules/src/*"]
     }
   },
   "exclude": ["node_modules", "dist", "**/dist"]

@@ -206,16 +206,6 @@ export function mockFs(files: Record<string, string | Buffer>) {
 }
 
 /**
- * 模拟模块
- */
-export function mockModule<T extends object>(
-  modulePath: string,
-  mockImplementation: Partial<T>
-): void {
-  vi.mock(modulePath, () => mockImplementation);
-}
-
-/**
  * 创建一个自动恢复的测试环境
  */
 export function createTestEnvironment() {

@@ -117,8 +117,14 @@ export class RuleLoader {
   /**
    * 添加单条规则
    * @param rule 规则对象
+   * @returns 是否添加成功
    */
-  addRule(rule: IRule): void {
+  addRule(rule: IRule): boolean {
+    // 验证规则是否有效
+    if (!this.isValidRule(rule)) {
+      return false;
+    }
+
     // 检查规则ID是否已存在
     if (this.rules.has(rule.id)) {
       console.warn(`规则ID '${rule.id}' 已存在，将被覆盖`);
@@ -148,6 +154,8 @@ export class RuleLoader {
       this.severityRules.set(rule.severity, new Set());
     }
     this.severityRules.get(rule.severity)!.add(rule.id);
+
+    return true;
   }
 
   /**
