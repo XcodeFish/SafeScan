@@ -6,9 +6,22 @@ import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 import { getCache } from '../../cache/memory';
-import type { TRuleResult, RuleSeverity } from '../../types';
-import type { Rule } from '../../types/rule';
+import type { TRuleResult, IRule } from '../../types';
 import { parse } from './parser';
+import { RuleVersionManager } from './rule-version';
+import { IRuleSchedulerConfig } from './rules-config';
+import { matchRulesWithScheduler } from './rules-matcher';
+
+// 定义SWC节点的扩展类型，用于AST操作
+interface SWCNode extends Record<string, unknown> {
+  type?: string;
+  span?: {
+    start: number;
+    end: number;
+    ctxt?: number;
+  };
+  body?: SWCNode[] | SWCNode;
+}
 
 /**
  * 文件内容哈希缓存
@@ -46,6 +59,22 @@ export interface IncrementalScannerConfig {
    * 排除文件模式
    */
   exclude?: string[];
+
+  /**
+   * 规则调度器配置
+   */
+  schedulerConfig?: IRuleSchedulerConfig;
+
+  /**
+   * 规则版本管理器配置路径
+   */
+  rulesVersionRegistryPath?: string;
+
+  /**
+   * 是否启用规则优先级调度
+   * @default true
+   */
+  enablePriorityScheduling?: boolean;
 }
 
 /**
@@ -53,6 +82,7 @@ export interface IncrementalScannerConfig {
  */
 export class IncrementalScanner {
   private config: IncrementalScannerConfig;
+  private ruleVersionManager: RuleVersionManager | null = null;
 
   /**
    * 创建增量扫描器实例
@@ -63,8 +93,18 @@ export class IncrementalScanner {
       enableCache: true,
       forceRescan: false,
       cacheTTL: 3600000, // 1小时
+      enablePriorityScheduling: true,
       ...config,
     };
+
+    // 初始化规则版本管理器
+    if (this.config.rulesVersionRegistryPath) {
+      this.ruleVersionManager = new RuleVersionManager(this.config.rulesVersionRegistryPath);
+      // 异步加载版本注册表
+      this.ruleVersionManager.loadRegistry().catch((err) => {
+        console.error('加载规则版本注册表失败:', err);
+      });
+    }
   }
 
   /**
@@ -73,7 +113,10 @@ export class IncrementalScanner {
    * @param rules 要检查的规则
    * @returns 规则检查结果
    */
-  async scanFile(filePath: string, rules: Rule[]): Promise<TRuleResult[]> {
+  async scanFile(filePath: string, rules: IRule[]): Promise<TRuleResult[]> {
+    // 如果启用了规则版本管理，更新规则版本
+    await this.updateRuleVersions(rules);
+
     // 如果禁用缓存或强制重新扫描，则执行完整扫描
     if (!this.config.enableCache || this.config.forceRescan) {
       return this.fullScan(filePath, rules);
@@ -113,7 +156,10 @@ export class IncrementalScanner {
    * @param rules 要检查的规则
    * @returns 规则检查结果
    */
-  async scanFiles(filePaths: string[], rules: Rule[]): Promise<TRuleResult[]> {
+  async scanFiles(filePaths: string[], rules: IRule[]): Promise<TRuleResult[]> {
+    // 如果启用了规则版本管理，更新规则版本
+    await this.updateRuleVersions(rules);
+
     // 过滤排除的文件
     const filteredPaths = this.config.exclude
       ? filePaths.filter((filePath) => !this.isExcluded(filePath))
@@ -133,116 +179,119 @@ export class IncrementalScanner {
    * @param rules 要检查的规则
    * @returns 规则检查结果
    */
-  private async fullScan(filePath: string, rules: Rule[]): Promise<TRuleResult[]> {
+  private async fullScan(filePath: string, rules: IRule[]): Promise<TRuleResult[]> {
     try {
       // 读取文件内容
       const fileContent = await fs.readFile(filePath, 'utf-8');
 
       // 解析AST
-      const ast = await parse(fileContent, filePath);
-      if (!ast) {
+      const parseResult = await parse(fileContent, filePath);
+      if (!parseResult || !parseResult.success || !parseResult.ast) {
         throw new Error(`解析AST失败: ${filePath}`);
       }
 
-      const results: TRuleResult[] = [];
+      // 使用优先级调度器执行规则检测
+      if (this.config.enablePriorityScheduling) {
+        const issues = await matchRulesWithScheduler(
+          parseResult,
+          rules,
+          this.config.schedulerConfig
+        );
 
-      // 遍历AST执行所有规则
-      this.traverseAST(ast, (node) => {
-        for (const rule of rules) {
-          // 创建规则上下文
-          const context = {
-            fileContent,
-            filePath,
-            ast,
-            getNodeText: (node: any) => {
-              const startPos = node.span?.start;
-              const endPos = node.span?.end;
-              if (startPos !== undefined && endPos !== undefined) {
-                return fileContent.substring(startPos, endPos);
-              }
-              return '';
-            },
-            getNodeLocation: (node: any) => {
-              const startPos = node.span?.start || 0;
-              const endPos = node.span?.end || 0;
+        // 转换为TRuleResult类型
+        return issues as unknown as TRuleResult[];
+      } else {
+        // 使用传统方式（遍历AST）执行规则检测
+        const results: TRuleResult[] = [];
 
-              // 简单计算行列号
-              const beforeStart = fileContent.substring(0, startPos);
-              const beforeEnd = fileContent.substring(0, endPos);
+        // 遍历AST执行所有规则
+        this.traverseAST(parseResult.ast, (_node) => {
+          for (const rule of rules) {
+            // 创建规则上下文
+            const context = {
+              fileContent,
+              filePath,
+              ast: parseResult.ast,
+              getNodeText: (node: SWCNode) => {
+                const startPos = node.span?.start;
+                const endPos = node.span?.end;
+                if (startPos !== undefined && endPos !== undefined) {
+                  return fileContent.substring(startPos, endPos);
+                }
+                return '';
+              },
+              getNodeLocation: (node: SWCNode) => {
+                const startPos = node.span?.start || 0;
+                const endPos = node.span?.end || 0;
 
-              const startLine = (beforeStart.match(/\n/g) || []).length + 1;
-              const endLine = (beforeEnd.match(/\n/g) || []).length + 1;
+                // 简单计算行列号
+                const beforeStart = fileContent.substring(0, startPos);
+                const beforeEnd = fileContent.substring(0, endPos);
 
-              const startLineStart = beforeStart.lastIndexOf('\n') + 1;
-              const endLineStart = beforeEnd.lastIndexOf('\n') + 1;
+                const startLine = (beforeStart.match(/\n/g) || []).length + 1;
+                const endLine = (beforeEnd.match(/\n/g) || []).length + 1;
 
-              return {
-                filePath,
-                start: {
-                  line: startLine,
-                  column: startPos - startLineStart + 1,
-                },
-                end: {
-                  line: endLine,
-                  column: endPos - endLineStart + 1,
-                },
-              };
-            },
-          };
+                const startLineStart = beforeStart.lastIndexOf('\n') + 1;
+                const endLineStart = beforeEnd.lastIndexOf('\n') + 1;
 
-          try {
-            // 执行规则匹配
-            const issue = rule.matcher(node, context);
-            if (issue) {
-              // 收集结果
-              if (Array.isArray(issue)) {
-                issue.forEach((i) => {
-                  results.push({
-                    ruleId: rule.id,
-                    message: i.message,
-                    severity: i.severity as unknown as RuleSeverity,
-                    location: {
-                      filePath,
-                      start: i.location.start,
-                      end: i.location.end,
-                    },
-                    codeSnippet: i.code || '',
-                    fixSuggestion:
-                      i.suggestions && i.suggestions.length > 0
-                        ? i.suggestions[0].code || i.suggestions[0].description
-                        : undefined,
-                    fixable: i.suggestions && i.suggestions.length > 0 ? true : false,
-                  });
-                });
-              } else {
-                results.push({
-                  ruleId: rule.id,
-                  message: issue.message,
-                  severity: issue.severity as unknown as RuleSeverity,
-                  location: {
-                    filePath,
-                    start: issue.location.start,
-                    end: issue.location.end,
+                return {
+                  filePath,
+                  start: {
+                    line: startLine,
+                    column: startPos - startLineStart + 1,
                   },
-                  codeSnippet: issue.code || '',
-                  fixSuggestion:
-                    issue.suggestions && issue.suggestions.length > 0
-                      ? issue.suggestions[0].code || issue.suggestions[0].description
-                      : undefined,
-                  fixable: issue.suggestions && issue.suggestions.length > 0 ? true : false,
-                });
-              }
-            }
-          } catch (error) {
-            console.error(`规则执行错误 (${rule.id}):`, error);
-          }
-        }
-      });
+                  end: {
+                    line: endLine,
+                    column: endPos - endLineStart + 1,
+                  },
+                };
+              },
+            };
 
-      return results;
+            try {
+              // 执行规则检测
+              const ruleResults = rule.detect(parseResult.ast, context);
+              if (ruleResults && ruleResults.length > 0) {
+                results.push(...ruleResults);
+              }
+            } catch (error) {
+              console.error(`规则 ${rule.id} 执行错误:`, error);
+            }
+          }
+        });
+
+        return results;
+      }
     } catch (error) {
-      console.error(`完整扫描失败 (${filePath}):`, error);
+      console.error(`扫描文件失败 (${filePath}):`, error);
       return [];
+    }
+  }
+
+  /**
+   * 更新规则版本信息
+   * @param rules 规则数组
+   */
+  private async updateRuleVersions(rules: IRule[]): Promise<void> {
+    if (!this.ruleVersionManager) return;
+
+    try {
+      // 更新规则版本
+      const updates = this.ruleVersionManager.updateRulesVersions(rules);
+
+      // 保存注册表
+      await this.ruleVersionManager.saveRegistry();
+
+      // 如果有修改，保存更新日志
+      if (updates.some((u) => u.type !== 'unchanged')) {
+        const changelogPath = path.join(
+          path.dirname(this.config.rulesVersionRegistryPath || ''),
+          'CHANGELOG.md'
+        );
+        await this.ruleVersionManager.saveChangelog(updates, changelogPath);
+      }
+    } catch (error) {
+      console.error('更新规则版本失败:', error);
     }
   }
 
@@ -251,7 +300,7 @@ export class IncrementalScanner {
    * @param node 节点
    * @param visitor 访问器函数
    */
-  private traverseAST(node: any, visitor: (node: any) => void): void {
+  private traverseAST(node: SWCNode, visitor: (node: SWCNode) => void): void {
     if (!node) return;
 
     // 调用访问器
@@ -259,9 +308,9 @@ export class IncrementalScanner {
 
     // 遍历子节点
     if (Array.isArray(node.body)) {
-      node.body.forEach((child: any) => this.traverseAST(child, visitor));
+      node.body.forEach((child: SWCNode) => this.traverseAST(child, visitor));
     } else if (node.body) {
-      this.traverseAST(node.body, visitor);
+      this.traverseAST(node.body as SWCNode, visitor);
     }
 
     // 遍历其他可能的子节点属性
@@ -300,9 +349,9 @@ export class IncrementalScanner {
       const child = node[key];
 
       if (Array.isArray(child)) {
-        child.forEach((c: any) => c && this.traverseAST(c, visitor));
+        child.forEach((c: SWCNode | null) => c && this.traverseAST(c, visitor));
       } else if (child && typeof child === 'object') {
-        this.traverseAST(child, visitor);
+        this.traverseAST(child as SWCNode, visitor);
       }
     }
   }
@@ -322,7 +371,7 @@ export class IncrementalScanner {
    * @param rules 规则列表
    * @returns 缓存键
    */
-  private getCacheKey(filePath: string, rules: Rule[]): string {
+  private getCacheKey(filePath: string, rules: IRule[]): string {
     // 结合文件路径和规则ID生成唯一键
     const ruleIds = rules
       .map((rule) => rule.id)

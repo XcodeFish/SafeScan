@@ -8,6 +8,47 @@ import { RuleSeverity } from '../../types';
 import type { IRule, RuleConfig, TProjectConfig } from '../../types';
 
 /**
+ * 规则优先级枚举，数值越小优先级越高
+ */
+export enum RulePriority {
+  CRITICAL = 0, // 严重安全问题，必须立即阻断
+  HIGH = 1, // 高风险安全问题，优先处理
+  MEDIUM = 2, // 中等风险，常规处理
+  LOW = 3, // 低风险，建议性修复
+  INFO = 4, // 信息性提示，最低优先级
+}
+
+/**
+ * 规则调度配置接口
+ */
+export interface IRuleSchedulerConfig {
+  // 最大并发规则执行数
+  maxConcurrentRules?: number;
+  // 是否启用优先级调度
+  enablePriorityScheduling?: boolean;
+  // 每个优先级等级的权重，用于加权调度
+  priorityWeights?: Record<RulePriority, number>;
+  // 超时配置（毫秒）
+  timeoutMs?: number;
+}
+
+/**
+ * 默认调度器配置
+ */
+export const DEFAULT_SCHEDULER_CONFIG: IRuleSchedulerConfig = {
+  maxConcurrentRules: 5,
+  enablePriorityScheduling: true,
+  priorityWeights: {
+    [RulePriority.CRITICAL]: 10,
+    [RulePriority.HIGH]: 5,
+    [RulePriority.MEDIUM]: 3,
+    [RulePriority.LOW]: 2,
+    [RulePriority.INFO]: 1,
+  },
+  timeoutMs: 30000, // 30秒
+};
+
+/**
  * 规则配置管理器
  * 用于加载、合并和优先级处理规则配置
  */
