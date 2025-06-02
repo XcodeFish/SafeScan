@@ -212,7 +212,7 @@ export async function parseCode(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      errors: [error instanceof Error ? error : new Error(String(error))],
       filePath: filePath || 'unknown',
     };
   }
@@ -234,12 +234,22 @@ export async function parseFile(
     // 读取文件内容
     const fileContent = await fs.readFile(filePath, 'utf-8');
 
+    // 计算文件哈希用于缓存
+    const hash = calculateHash(fileContent);
+
     // 使用parseCode解析文件内容
-    return parseCode(fileContent, options, filePath, parserConfig);
+    const parseResult = await parseCode(fileContent, options, filePath, parserConfig);
+
+    // 添加文件哈希和源代码
+    return {
+      ...parseResult,
+      hash,
+      sourceCode: fileContent, // 添加源代码
+    };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      errors: [error instanceof Error ? error : new Error(String(error))],
       filePath,
     };
   }
@@ -379,7 +389,9 @@ async function saveScanState(
     // 创建结果映射以便于查找
     const resultMap = new Map<string, TParseResult>();
     results.forEach((result) => {
-      resultMap.set(result.filePath, result);
+      if (result.filePath) {
+        resultMap.set(result.filePath, result);
+      }
     });
 
     // 收集文件状态
@@ -494,7 +506,9 @@ async function mergeWithPreviousResults(
   // 创建映射以快速查找新结果
   const newResultsMap = new Map<string, TParseResult>();
   newResults.forEach((result) => {
-    newResultsMap.set(result.filePath, result);
+    if (result.filePath) {
+      newResultsMap.set(result.filePath, result);
+    }
   });
 
   const mergedResults: TParseResult[] = [...newResults];

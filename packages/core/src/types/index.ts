@@ -148,15 +148,11 @@ export interface TFixResult {
 }
 
 // 解析结果
-export interface TParseResult {
-  /** 是否成功解析 */
+export type TParseResult = {
   success: boolean;
-  /** 解析的AST */
-  ast?: TAST;
-  /** 错误信息 */
-  error?: string;
-  /** 文件路径 */
-  filePath: string;
-  /** 文件哈希值 */
+  ast?: any;
+  filePath?: string;
+  sourceCode?: string;
+  errors?: Error[];
   hash?: string;
-}
+};
