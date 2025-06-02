@@ -27,6 +27,10 @@ export interface IParserConfig {
     baseDir?: string;
     /** 增量扫描的记录文件 */
     stateFile?: string;
+    /** 强制重新扫描的文件路径模式 */
+    forceRescanPatterns?: string[];
+    /** 是否包括新添加的文件 */
+    includeNewFiles?: boolean;
   };
 }
 
@@ -37,6 +41,8 @@ const DEFAULT_PARSER_CONFIG: IParserConfig = {
   incrementalScan: {
     enabled: true,
     stateFile: '.safescan-state.json',
+    includeNewFiles: true,
+    forceRescanPatterns: [],
   },
 };
 
@@ -46,6 +52,8 @@ interface IFileState {
   hash: string;
   /** 最后修改时间 */
   mtime: number;
+  /** 文件大小 */
+  size?: number;
 }
 
 // 增量扫描状态
@@ -56,6 +64,10 @@ interface IScanState {
   createdAt: number;
   /** 最后更新时间 */
   updatedAt: number;
+  /** 上次扫描的文件数量 */
+  totalFiles?: number;
+  /** 上次扫描的版本号 */
+  version?: string;
 }
 
 /**
@@ -248,52 +260,62 @@ export async function parseDirectory(
   parserConfig: IParserConfig = DEFAULT_PARSER_CONFIG
 ): Promise<TParseResult[]> {
   try {
-    // 如果启用增量扫描，加载之前的状态
-    let previousState: IScanState | null = null;
-    if (parserConfig.incrementalScan?.enabled) {
-      previousState = await loadScanState(
-        parserConfig.incrementalScan.stateFile || path.join(dirPath, '.safescan-state.json')
-      );
-    }
-
-    // 读取目录中的所有文件
+    // 解析目录中所有匹配扩展名的文件
     const files = await readDirectoryRecursive(dirPath, extensions);
 
-    // 如果启用增量扫描，筛选出变更的文件
-    let filesToParse = files;
-    if (previousState && parserConfig.incrementalScan?.enabled) {
-      filesToParse = await filterChangedFiles(files, previousState);
-    }
+    // 根据扫描配置确定要扫描的文件
+    let filesToScan = files;
+    let previousState: IScanState | null = null;
+    const stateFilePath = path.join(
+      parserConfig.incrementalScan?.baseDir || dirPath,
+      parserConfig.incrementalScan?.stateFile || DEFAULT_PARSER_CONFIG.incrementalScan!.stateFile!
+    );
 
-    // 并行解析所有文件
-    const parsePromises = filesToParse.map((file) => parseFile(file, options, parserConfig));
-    const newResults = await Promise.all(parsePromises);
-
-    // 如果启用增量扫描，合并之前的结果
-    let results = newResults;
-    if (previousState && parserConfig.incrementalScan?.enabled) {
-      results = await mergeWithPreviousResults(newResults, files, previousState, parserConfig);
-    }
-
-    // 更新扫描状态
+    // 增量扫描逻辑
     if (parserConfig.incrementalScan?.enabled) {
-      await saveScanState(
-        files,
-        results,
-        parserConfig.incrementalScan.stateFile || path.join(dirPath, '.safescan-state.json')
-      );
+      // 加载上次扫描状态
+      previousState = await loadScanState(stateFilePath);
+
+      if (previousState) {
+        // 过滤出变更的文件
+        filesToScan = await filterChangedFiles(
+          files,
+          previousState,
+          parserConfig.incrementalScan.forceRescanPatterns || [],
+          parserConfig.incrementalScan.includeNewFiles !== false
+        );
+
+        console.log(
+          `[增量扫描] 共检测到${files.length}个文件，需要扫描${filesToScan.length}个变更文件`
+        );
+      } else {
+        console.log(`[首次扫描] 共检测到${files.length}个文件`);
+      }
     }
 
-    return results;
+    // 解析过滤后的文件
+    const parsePromises = filesToScan.map((file) => parseFile(file, options, parserConfig));
+    const results = await Promise.all(parsePromises);
+
+    // 增量扫描模式下，合并新结果与先前缓存的结果
+    let finalResults = results;
+    if (
+      parserConfig.incrementalScan?.enabled &&
+      previousState &&
+      filesToScan.length < files.length
+    ) {
+      finalResults = await mergeWithPreviousResults(results, files, previousState, parserConfig);
+    }
+
+    // 保存当前扫描状态（用于下次增量扫描）
+    if (parserConfig.incrementalScan?.enabled) {
+      await saveScanState(files, finalResults, stateFilePath);
+    }
+
+    return finalResults;
   } catch (error) {
-    // 返回一个只包含错误信息的解析结果
-    return [
-      {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-        filePath: dirPath,
-      },
-    ];
+    console.error('解析目录失败:', error);
+    return [];
   }
 }
 
@@ -334,7 +356,8 @@ async function readDirectoryRecursive(dirPath: string, extensions: string[]): Pr
 async function loadScanState(stateFilePath: string): Promise<IScanState | null> {
   try {
     const stateData = await fs.readFile(stateFilePath, 'utf-8');
-    return JSON.parse(stateData) as IScanState;
+    const state = JSON.parse(stateData) as IScanState;
+    return state;
   } catch (error) {
     // 状态文件不存在或无法解析
     return null;
@@ -342,8 +365,8 @@ async function loadScanState(stateFilePath: string): Promise<IScanState | null> 
 }
 
 /**
- * 保存增量扫描状态
- * @param files 文件列表
+ * 保存当前的扫描状态
+ * @param files 扫描的文件路径
  * @param results 解析结果
  * @param stateFilePath 状态文件路径
  */
@@ -353,78 +376,100 @@ async function saveScanState(
   stateFilePath: string
 ): Promise<void> {
   try {
-    // 创建文件状态映射
+    // 创建结果映射以便于查找
+    const resultMap = new Map<string, TParseResult>();
+    results.forEach((result) => {
+      resultMap.set(result.filePath, result);
+    });
+
+    // 收集文件状态
     const fileStates: Record<string, IFileState> = {};
 
-    // 获取成功解析的结果
-    const successResults = results.filter((result) => result.success);
-
-    // 获取所有文件的哈希和修改时间
     for (const file of files) {
       try {
-        // 寻找对应的解析结果
-        const result = successResults.find((r) => r.filePath === file);
+        const stats = await fs.stat(file);
+        const result = resultMap.get(file);
 
-        if (result && result.hash) {
-          const stats = await fs.stat(file);
-
-          fileStates[file] = {
-            hash: result.hash,
-            mtime: stats.mtimeMs,
-          };
-        }
-      } catch (err) {
-        // 忽略单个文件的错误
+        fileStates[file] = {
+          hash: result?.hash || calculateFileHash(file, ''),
+          mtime: Math.floor(stats.mtimeMs),
+          size: stats.size,
+        };
+      } catch (error) {
+        // 忽略无法获取状态的文件
       }
     }
 
-    // 创建状态对象
-    const state: IScanState = {
+    // 创建扫描状态
+    const scanState: IScanState = {
       files: fileStates,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      totalFiles: files.length,
+      version: '1.0.0',
     };
 
-    // 确保状态文件目录存在
-    const stateDir = path.dirname(stateFilePath);
-    await fs.mkdir(stateDir, { recursive: true });
+    // 确保状态文件的目录存在
+    const stateFileDir = path.dirname(stateFilePath);
+    await fs.mkdir(stateFileDir, { recursive: true });
 
     // 写入状态文件
-    await fs.writeFile(stateFilePath, JSON.stringify(state, null, 2), 'utf-8');
+    await fs.writeFile(stateFilePath, JSON.stringify(scanState, null, 2), 'utf-8');
   } catch (error) {
-    console.error('Failed to save scan state:', error);
+    console.error('保存扫描状态失败:', error);
   }
 }
 
 /**
- * 筛选出已更改的文件
- * @param files 所有文件列表
- * @param previousState 之前的扫描状态
- * @returns 已更改的文件列表
+ * 过滤出已变更的文件
+ * @param files 所有文件路径
+ * @param previousState 先前的扫描状态
+ * @param forceRescanPatterns 强制重新扫描的文件路径模式
+ * @param includeNewFiles 是否包含新添加的文件
+ * @returns 需要重新扫描的文件路径数组
  */
-async function filterChangedFiles(files: string[], previousState: IScanState): Promise<string[]> {
+async function filterChangedFiles(
+  files: string[],
+  previousState: IScanState,
+  forceRescanPatterns: string[] = [],
+  includeNewFiles: boolean = true
+): Promise<string[]> {
   const changedFiles: string[] = [];
 
   for (const file of files) {
     try {
-      const stats = await fs.stat(file);
-      const prevState = previousState.files[file];
-
-      // 如果文件是新增的或修改时间变更，认为文件已更改
-      if (!prevState || stats.mtimeMs > prevState.mtime) {
+      // 检查是否匹配强制重新扫描的模式
+      if (
+        forceRescanPatterns.length > 0 &&
+        forceRescanPatterns.some((pattern) => file.includes(pattern))
+      ) {
         changedFiles.push(file);
         continue;
       }
 
-      // 进一步检查文件内容是否变更
-      const content = await fs.readFile(file, 'utf-8');
-      const currentHash = calculateFileHash(file, content);
+      // 获取文件状态
+      const stats = await fs.stat(file);
 
-      if (currentHash !== prevState.hash) {
+      // 检查文件是否在先前的扫描状态中
+      const previousFileState = previousState.files[file];
+
+      if (!previousFileState) {
+        // 新文件，如果启用了包含新文件，则添加到变更列表
+        if (includeNewFiles) {
+          changedFiles.push(file);
+        }
+        continue;
+      }
+
+      // 检查文件是否被修改（比较修改时间和文件大小）
+      if (
+        Math.floor(stats.mtimeMs) > previousFileState.mtime ||
+        (previousFileState.size !== undefined && stats.size !== previousFileState.size)
+      ) {
         changedFiles.push(file);
       }
     } catch (error) {
-      // 文件访问错误，将其添加到变更列表中
+      // 无法获取文件状态，保守地添加到变更列表
       changedFiles.push(file);
     }
   }
@@ -433,10 +478,10 @@ async function filterChangedFiles(files: string[], previousState: IScanState): P
 }
 
 /**
- * 合并新旧解析结果
- * @param newResults 新的解析结果
- * @param allFiles 所有文件列表
- * @param previousState 之前的扫描状态
+ * 合并新解析结果与先前的结果
+ * @param newResults 新解析的结果
+ * @param allFiles 所有文件路径
+ * @param previousState 先前的扫描状态
  * @param parserConfig 解析器配置
  * @returns 合并后的解析结果
  */
@@ -446,33 +491,44 @@ async function mergeWithPreviousResults(
   previousState: IScanState,
   parserConfig: IParserConfig
 ): Promise<TParseResult[]> {
-  const results = [...newResults];
-  const processedFiles = new Set(newResults.map((r) => r.filePath));
+  // 创建映射以快速查找新结果
+  const newResultsMap = new Map<string, TParseResult>();
+  newResults.forEach((result) => {
+    newResultsMap.set(result.filePath, result);
+  });
 
-  // 对于未处理的文件，尝试从缓存中获取之前的结果
-  for (const file of allFiles) {
-    if (processedFiles.has(file)) {
+  const mergedResults: TParseResult[] = [...newResults];
+
+  // 对于未在新结果中的文件，尝试从缓存加载
+  const filesToRestore = allFiles.filter((file) => !newResultsMap.has(file));
+
+  for (const file of filesToRestore) {
+    const previousFile = previousState.files[file];
+
+    if (!previousFile) {
       continue;
     }
 
-    const prevState = previousState.files[file];
-    if (!prevState) {
-      continue;
-    }
+    // 尝试从内存缓存获取
+    const cacheKey = `${file}:${previousFile.hash}`;
+    let cachedResult = parseResultCache.get(cacheKey);
 
-    // 尝试从缓存中获取之前的解析结果
-    if (parserConfig.enableCache && parserConfig.enableDiskCache) {
-      const cachedResult = await getParseResultFromCache(file, prevState.hash);
-      if (cachedResult) {
-        results.push(cachedResult);
-        continue;
+    if (!cachedResult && parserConfig.enableDiskCache) {
+      // 尝试从磁盘缓存获取
+      const diskResult = await getParseResultFromCache(file, previousFile.hash);
+
+      // 如果找到结果，更新内存缓存
+      if (diskResult && parserConfig.enableCache) {
+        parseResultCache.set(cacheKey, diskResult);
+        cachedResult = diskResult;
       }
     }
 
-    // 如果缓存中没有，重新解析文件
-    const result = await parseFile(file, undefined, parserConfig);
-    results.push(result);
+    // 如果找到缓存的结果，添加到合并结果
+    if (cachedResult) {
+      mergedResults.push(cachedResult);
+    }
   }
 
-  return results;
+  return mergedResults;
 }
