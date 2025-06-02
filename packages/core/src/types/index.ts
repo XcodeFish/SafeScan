@@ -127,14 +127,16 @@ export interface TRuleResult {
 export interface TCodeLocation {
   /** 文件路径 */
   filePath: string;
-  /** 开始行 */
-  startLine: number;
-  /** 开始列 */
-  startColumn: number;
-  /** 结束行 */
-  endLine: number;
-  /** 结束列 */
-  endColumn: number;
+  /** 位置信息 */
+  start: {
+    line: number;
+    column: number;
+  };
+  /** 结束位置信息 */
+  end: {
+    line: number;
+    column: number;
+  };
 }
 
 // 修复结果

@@ -7,9 +7,12 @@ import path from 'path';
 import { parse as swcParse } from '@swc/core';
 import type { Module } from '@swc/core';
 import { getParseResultFromCache, saveParseResultToCache } from '../../cache/disk';
-import { parseResultCache } from '../../cache/memory';
+import { getCache } from '../../cache/memory';
 import type { TParseOptions, TParseResult } from '../../types';
 import { calculateFileHash, calculateHash } from '../../utils/hash';
+
+// 解析结果缓存
+const parseResultCache = getCache<TParseResult>('ast');
 
 /**
  * 解析配置
@@ -545,4 +548,15 @@ async function mergeWithPreviousResults(
   }
 
   return mergedResults;
+}
+
+/**
+ * 解析代码生成AST的简化函数
+ * @param code 代码字符串
+ * @param filePath 文件路径（可选）
+ * @returns 解析结果
+ */
+export async function parse(code: string, filePath?: string): Promise<any> {
+  const result = await parseCode(code, undefined, filePath);
+  return result.success ? result.ast : null;
 }

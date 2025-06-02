@@ -1,82 +1,106 @@
 /**
- * XSS漏洞检测规则 - 检测使用dangerouslySetInnerHTML的情况
+ * 规则ID: security/xss/dangerous-html
+ * 严重性: critical
+ *
+ * 此规则检测React中dangerouslySetInnerHTML的不安全使用，这可能导致XSS攻击
  */
-import type { Rule } from '../../../../../packages/core/src/types/rule';
+import type { Node } from '@swc/core';
+import { createRule } from '../../../../core/src/analyzer/static/rule-dsl';
+import type { RuleContext } from '../../../../core/src/types/rule';
 
-const rule: Rule = {
-  id: 'security/xss/dangerous-html',
-  name: 'Dangerous innerHTML',
-  description: '避免使用dangerouslySetInnerHTML，它可能导致XSS漏洞',
-  severity: 'high',
-  category: 'security',
-  framework: 'react',
+/**
+ * 检查是否为安全的HTML内容
+ * 此函数可以基于项目需求扩展更复杂的检测
+ */
+function isSafeHtmlContent(node: any): boolean {
+  // 检查是否有__html字段
+  if (!node || !node.properties) {
+    return false;
+  }
 
-  matcher: (node: any, context) => {
-    try {
-      // 调试输出
-      if (node.type === 'JSXAttribute') {
-        console.log('匹配JSXAttribute节点', node);
-        console.log('属性名:', node.name);
-      }
+  const htmlProp = node.properties.find((prop: any) => prop.key?.value === '__html');
 
-      // 检查是否为JSX属性
-      if (node.type === 'JSXAttribute') {
-        // 从测试输出中我们看到name字段有Identifier类型，并使用value字段存储属性名
-        if (
-          node.name &&
-          node.name.type === 'Identifier' &&
-          node.name.value === 'dangerouslySetInnerHTML'
-        ) {
-          console.log('匹配到dangerouslySetInnerHTML属性!');
-          const nodeText = context.getNodeText(node);
-          const location = context.getNodeLocation(node);
+  if (!htmlProp || !htmlProp.value) {
+    return false;
+  }
 
-          return {
-            ruleId: rule.id,
-            message: '使用dangerouslySetInnerHTML可能导致XSS漏洞',
-            severity: rule.severity,
-            category: rule.category,
-            location,
-            code: nodeText,
-            suggestions: [
-              {
-                description: '使用安全的渲染方式替代dangerouslySetInnerHTML',
-                code: '使用 {sanitizedContent} 替代 dangerouslySetInnerHTML',
-              },
-            ],
-          };
-        }
-      }
+  // 检查内容是否为字符串字面量（相对安全）
+  if (htmlProp.value.type === 'StringLiteral') {
+    return true;
+  }
 
-      // 另一种情况：通过文本匹配
-      if (node && typeof node === 'object') {
-        const nodeText = context.getNodeText(node);
-        if (nodeText && nodeText.includes('dangerouslySetInnerHTML')) {
-          console.log('通过文本匹配到dangerouslySetInnerHTML');
-          const location = context.getNodeLocation(node);
+  // 检查是否使用了DOMPurify等安全库（函数调用）
+  if (htmlProp.value.type === 'CallExpression' && htmlProp.value.callee?.type === 'Identifier') {
+    const funcName = htmlProp.value.callee.value;
+    // 白名单安全函数
+    const safeFunctions = ['sanitizeHtml', 'DOMPurify.sanitize', 'sanitize', 'purify'];
+    return safeFunctions.some((name) => funcName.includes(name));
+  }
 
-          return {
-            ruleId: rule.id,
-            message: '使用dangerouslySetInnerHTML可能导致XSS漏洞',
-            severity: rule.severity,
-            category: rule.category,
-            location,
-            code: nodeText,
-            suggestions: [
-              {
-                description: '使用安全的渲染方式替代dangerouslySetInnerHTML',
-                code: '使用 {sanitizedContent} 替代 dangerouslySetInnerHTML',
-              },
-            ],
-          };
-        }
-      }
-    } catch (error) {
-      console.error('XSS规则匹配错误:', error);
+  return false;
+}
+
+export default createRule()
+  .id('security/xss/dangerous-html')
+  .name('禁止不安全地使用dangerouslySetInnerHTML')
+  .description('使用dangerouslySetInnerHTML时必须确保内容已被正确清理，以防XSS攻击')
+  .category('security')
+  .severity('critical')
+  .framework('react')
+  .select((node: Node, _context: RuleContext) => {
+    // 检查是否为JSX属性
+    if (node.type !== 'JSXAttribute') {
+      return false;
     }
 
-    return null;
-  },
-};
+    // 检查是否是dangerouslySetInnerHTML属性
+    const attr = node as any;
+    return attr.name?.value === 'dangerouslySetInnerHTML';
+  })
+  .when((node: Node) => {
+    // 获取属性值
+    const attr = node as any;
+    if (!attr.value?.expression) {
+      return false; // 无表达式值
+    }
 
-export default rule;
+    // 检查表达式是否不安全
+    return !isSafeHtmlContent(attr.value.expression);
+  })
+  .report('发现不安全使用dangerouslySetInnerHTML，可能导致XSS攻击')
+  .documentation(
+    `
+    ### 问题描述
+    
+    React的dangerouslySetInnerHTML属性允许直接插入原始HTML，但这可能导致跨站脚本(XSS)攻击。
+    
+    ### 漏洞影响
+    
+    攻击者可能通过注入恶意脚本来获取用户信息、会话劫持或其他安全威胁。
+    
+    ### 修复建议
+    
+    1. 尽量避免使用dangerouslySetInnerHTML
+    2. 如必须使用，确保内容经过安全处理:
+       - 使用DOMPurify等库清理HTML内容
+       - 使用安全的标记语言如Markdown替代原始HTML
+       - 使用React组件结构而非原始HTML
+    
+    ### 示例代码
+    
+    错误示例:
+    \`\`\`jsx
+    <div dangerouslySetInnerHTML={{__html: userInput}} />
+    \`\`\`
+    
+    正确示例:
+    \`\`\`jsx
+    import DOMPurify from 'dompurify';
+    
+    <div dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(userInput)}} />
+    \`\`\`
+  `
+  )
+  .example('bad', '<div dangerouslySetInnerHTML={{__html: data}} />')
+  .example('good', '<div dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(data)}} />')
+  .build();
