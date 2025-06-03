@@ -620,6 +620,34 @@ export class DiskCache {
       console.error('Failed to save cache stats:', err);
     }
   }
+
+  /**
+   * 检查缓存项是否存在
+   * @param key 缓存键
+   * @returns Promise<是否存在>
+   */
+  async has(key: string): Promise<boolean> {
+    const cacheFilePath = this.getCacheFilePath(key);
+    try {
+      await fs.access(cacheFilePath);
+
+      // 如果文件存在，还需要检查是否过期
+      if (this.ttl) {
+        const stat = await fs.stat(cacheFilePath);
+        const fileTime = stat.mtime.getTime();
+        if (Date.now() - fileTime > this.ttl) {
+          // 文件已过期，可以删除
+          await fs.unlink(cacheFilePath).catch(() => {});
+          return false;
+        }
+      }
+
+      return true;
+    } catch (error) {
+      // 文件不存在或无法访问
+      return false;
+    }
+  }
 }
 
 /**

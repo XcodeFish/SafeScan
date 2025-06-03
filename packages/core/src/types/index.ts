@@ -2,6 +2,9 @@
  * SafeScan核心类型定义
  */
 
+// 导出缓存系统类型
+export * from './cache';
+
 // 规则相关类型
 export interface IRule {
   /** 规则唯一ID */

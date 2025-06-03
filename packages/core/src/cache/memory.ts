@@ -215,3 +215,39 @@ export function getCache<T = any>(namespace: 'rules' | 'ast' | 'fileHash' | stri
   }
   return cacheInstances[namespace] as LRUCache<T>;
 }
+
+/**
+ * 估算对象在内存中的大小（字节）
+ * @param obj 需要估算大小的对象
+ * @returns 估算的内存大小（字节）
+ */
+export function estimateObjectSize(obj: any): number {
+  if (obj === null || obj === undefined) {
+    return 0;
+  }
+
+  // 基本类型大小估算
+  if (typeof obj === 'boolean') return 4;
+  if (typeof obj === 'number') return 8;
+  if (typeof obj === 'string') return obj.length * 2;
+  if (typeof obj === 'function') return 0; // 忽略函数
+
+  // 数组和对象大小估算
+  if (Array.isArray(obj)) {
+    return obj.reduce((size, item) => size + estimateObjectSize(item), 0);
+  }
+
+  // 对象大小估算
+  if (typeof obj === 'object') {
+    let size = 0;
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        size += key.length * 2; // 键名大小
+        size += estimateObjectSize(obj[key]); // 值大小
+      }
+    }
+    return size;
+  }
+
+  return 0;
+}
