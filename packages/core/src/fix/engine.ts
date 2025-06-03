@@ -5,6 +5,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import type { TRuleResult } from '../types';
+import { generateSuggestion } from './suggestion';
+import { getAllTemplates } from './templates';
+import { transformCode } from './transformer';
+import { IFixContext, IFixResult, IFixTemplate, IIssue, IValidationResult } from './types';
+import { validateFix } from './validator';
 
 /**
  * 修复操作类型
@@ -78,11 +83,16 @@ export interface IFixEngineConfig {
 }
 
 /**
- * 自动修复引擎
+ * 修复引擎类
  */
 export class FixEngine {
   private config: IFixEngineConfig;
+  private templates: Map<string, IFixTemplate>;
+  private templatesByRule: Map<string, IFixTemplate[]>;
 
+  /**
+   * 构造函数
+   */
   constructor(config: IFixEngineConfig = {}) {
     this.config = {
       backup: true,
@@ -91,6 +101,185 @@ export class FixEngine {
       minConfidence: 80,
       ...config,
     };
+    this.templates = new Map();
+    this.templatesByRule = new Map();
+    this.initializeTemplates();
+  }
+
+  /**
+   * 初始化模板库
+   */
+  private initializeTemplates(): void {
+    const templates = getAllTemplates();
+
+    // 注册所有模板
+    templates.forEach((template) => {
+      this.templates.set(template.id, template);
+
+      // 按规则ID索引模板
+      template.supportedRules.forEach((ruleId) => {
+        if (!this.templatesByRule.has(ruleId)) {
+          this.templatesByRule.set(ruleId, []);
+        }
+        this.templatesByRule.get(ruleId)?.push(template);
+      });
+    });
+  }
+
+  /**
+   * 根据问题查找适用的修复模板
+   * @param issue 问题
+   * @returns 匹配的模板列表
+   */
+  public findTemplatesForIssue(issue: IIssue): IFixTemplate[] {
+    const templates = this.templatesByRule.get(issue.ruleId) || [];
+    return templates;
+  }
+
+  /**
+   * 修复单个问题
+   * @param sourceCode 源代码
+   * @param filePath 文件路径
+   * @param issue 问题
+   * @param options 选项
+   * @returns 修复结果
+   */
+  public async fixIssue(
+    sourceCode: string,
+    filePath: string,
+    issue: IIssue,
+    options: { validateAfterFix?: boolean } = {}
+  ): Promise<IFixResult> {
+    const templates = this.findTemplatesForIssue(issue);
+
+    if (templates.length === 0) {
+      return {
+        fixed: false,
+        failReason: `没有找到适用于规则 ${issue.ruleId} 的修复模板`,
+        description: '无法自动修复',
+        changedLocations: [],
+        suggestion: await this.generateManualFixSuggestion(issue),
+      };
+    }
+
+    // 尝试每一个匹配的模板进行修复
+    for (const template of templates) {
+      const context: IFixContext = {
+        sourceCode,
+        filePath,
+        node: issue.metadata?.node,
+        ruleId: issue.ruleId,
+        location: issue.location,
+        issue,
+      };
+
+      try {
+        const result = template.fix(context);
+
+        // 如果修复成功且需要验证
+        if (result.fixed && options.validateAfterFix && result.fixedCode) {
+          const validationResult = await this.validateFix({
+            originalCode: sourceCode,
+            fixedCode: result.fixedCode,
+            filePath,
+            issue,
+          });
+
+          if (!validationResult.valid) {
+            result.fixed = false;
+            result.failReason = `修复验证失败: ${validationResult.errors?.join(', ')}`;
+          }
+        }
+
+        if (result.fixed) {
+          return result;
+        }
+      } catch (error) {
+        console.error(`模板 ${template.id} 修复出错:`, error);
+      }
+    }
+
+    // 所有模板都无法修复,生成手动修复建议
+    return {
+      fixed: false,
+      failReason: '所有适用模板均无法修复此问题',
+      description: '无法自动修复',
+      changedLocations: [],
+      suggestion: await this.generateManualFixSuggestion(issue),
+    };
+  }
+
+  /**
+   * 批量修复多个问题
+   * @param sourceCode 源代码
+   * @param filePath 文件路径
+   * @param issues 问题列表
+   * @param options 选项
+   * @returns 修复结果
+   */
+  public async fixMultipleIssues(
+    sourceCode: string,
+    filePath: string,
+    issues: IIssue[],
+    options: { validateAfterFix?: boolean } = {}
+  ): Promise<{ fixedCode: string; results: IFixResult[] }> {
+    let currentCode = sourceCode;
+    const results: IFixResult[] = [];
+
+    // 按位置从后向前排序,避免位置偏移问题
+    const sortedIssues = [...issues].sort(
+      (a, b) =>
+        b.location.startLine - a.location.startLine ||
+        b.location.startColumn - a.location.startColumn
+    );
+
+    for (const issue of sortedIssues) {
+      const result = await this.fixIssue(currentCode, filePath, issue, options);
+      results.push(result);
+
+      if (result.fixed && result.fixedCode) {
+        currentCode = result.fixedCode;
+      }
+    }
+
+    return {
+      fixedCode: currentCode,
+      results,
+    };
+  }
+
+  /**
+   * 验证修复结果
+   * @param params 验证参数
+   * @returns 验证结果
+   */
+  public async validateFix(params: {
+    originalCode: string;
+    fixedCode: string;
+    filePath: string;
+    issue: IIssue;
+  }): Promise<IValidationResult> {
+    return validateFix(params);
+  }
+
+  /**
+   * 生成手动修复建议
+   * @param issue 问题
+   * @returns 修复建议
+   */
+  private async generateManualFixSuggestion(issue: IIssue): Promise<string> {
+    const suggestion = await generateSuggestion(issue);
+    return suggestion?.description || '无法提供修复建议';
+  }
+
+  /**
+   * 应用转换器转换代码
+   * @param sourceCode 源代码
+   * @param transformations 转换配置
+   * @returns 转换后代码
+   */
+  public async transformCode(sourceCode: string, transformations: any[]): Promise<string> {
+    return transformCode(sourceCode, transformations);
   }
 
   /**
