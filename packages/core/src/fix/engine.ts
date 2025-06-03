@@ -614,3 +614,105 @@ export class FixEngine {
 export function createFixEngine(config?: IFixEngineConfig): FixEngine {
   return new FixEngine(config);
 }
+
+/**
+ * 修复请求接口
+ */
+interface FixRequest {
+  file: string;
+  issueId: string;
+  fix: string | FixFunction;
+}
+
+/**
+ * 修复函数类型
+ */
+type FixFunction = (fileContent: string) => string;
+
+/**
+ * 修复结果接口
+ */
+interface FixResult {
+  successCount: number;
+  failureCount: number;
+  failures: {
+    file: string;
+    issueId: string;
+    error: string;
+  }[];
+}
+
+/**
+ * 应用自动修复
+ *
+ * @param fixes 修复请求数组
+ * @returns 修复结果
+ */
+export async function applyFixes(fixes: FixRequest[]): Promise<FixResult> {
+  const result: FixResult = {
+    successCount: 0,
+    failureCount: 0,
+    failures: [],
+  };
+
+  // 按文件分组修复请求，避免多次读写同一文件
+  const fileFixMap: Map<string, FixRequest[]> = new Map();
+
+  for (const fix of fixes) {
+    if (!fileFixMap.has(fix.file)) {
+      fileFixMap.set(fix.file, []);
+    }
+    fileFixMap.get(fix.file)?.push(fix);
+  }
+
+  // 处理每个文件
+  for (const [file, fileFixes] of fileFixMap.entries()) {
+    try {
+      // 读取文件内容
+      const fileContent = await fs.readFile(file, 'utf8');
+
+      // 应用所有修复
+      let updatedContent = fileContent;
+
+      for (const fixRequest of fileFixes) {
+        try {
+          if (typeof fixRequest.fix === 'string') {
+            // 字符串修复是直接替换的模板
+            updatedContent = updatedContent.replace(/\/\/ AUTO-FIX: .+/g, '');
+            updatedContent =
+              updatedContent + `\n// AUTO-FIX: ${fixRequest.issueId}\n${fixRequest.fix}\n`;
+          } else if (typeof fixRequest.fix === 'function') {
+            // 函数修复需要调用函数处理
+            updatedContent = fixRequest.fix(updatedContent);
+          }
+
+          result.successCount++;
+        } catch (error: unknown) {
+          result.failureCount++;
+          result.failures.push({
+            file: fixRequest.file,
+            issueId: fixRequest.issueId,
+            error: (error as Error).message || '未知错误',
+          });
+        }
+      }
+
+      // 仅在内容变更时写入文件
+      if (updatedContent !== fileContent) {
+        await fs.writeFile(file, updatedContent, 'utf8');
+      }
+    } catch (error: unknown) {
+      // 处理文件读写错误
+      for (const fixRequest of fileFixes) {
+        result.failureCount++;
+        result.failures.push({
+          file: fixRequest.file,
+          issueId: fixRequest.issueId,
+          error: `文件操作失败: ${(error as Error).message || '未知错误'}`,
+        });
+      }
+    }
+  }
+
+  return result;
+}

@@ -167,3 +167,196 @@ export type TParseResult = {
   errors?: Error[];
   hash?: string;
 };
+
+/**
+ * 问题严重程度枚举
+ */
+export enum Severity {
+  INFO = 0,
+  WARNING = 1,
+  ERROR = 2,
+  CRITICAL = 3,
+}
+
+/**
+ * 问题类型枚举
+ */
+export enum IssueType {
+  SECURITY = 'security',
+  MEMORY_LEAK = 'memory-leak',
+  PERFORMANCE = 'performance',
+  ACCESSIBILITY = 'accessibility',
+  CODE_QUALITY = 'code-quality',
+}
+
+/**
+ * 问题定位接口
+ */
+export interface IssueLocation {
+  file: string;
+  line: number;
+  column: number;
+  endLine?: number;
+  endColumn?: number;
+}
+
+/**
+ * 自动修复接口
+ */
+export interface IssueFix {
+  type: 'replace' | 'insert' | 'delete';
+  text: string;
+  range?: [number, number];
+}
+
+/**
+ * 安全问题接口
+ */
+export interface Issue {
+  id: string;
+  ruleId: string;
+  severity: Severity;
+  type: IssueType;
+  message: string;
+  location: IssueLocation;
+  code?: string;
+  pointer?: string;
+  fixable: boolean;
+  fix?: IssueFix;
+  documentation?: string;
+}
+
+/**
+ * 文件扫描结果接口
+ */
+export interface FileResult {
+  file: string;
+  issues: Issue[];
+}
+
+/**
+ * 内存泄漏接口
+ */
+export interface MemoryLeak {
+  id: string;
+  component: string;
+  size: number;
+  type: string;
+  severity: 'critical' | 'major' | 'minor';
+  growthRate?: number;
+  referenceChain?: string[];
+  example?: any;
+  recommendation?: string;
+}
+
+/**
+ * 内存泄漏分析结果接口
+ */
+export interface MemoryAnalysisResult {
+  leaks: MemoryLeak[];
+  totalLeakSize: number;
+  snapshots: {
+    timestamp: number;
+    totalMemory: number;
+    jsHeapSize: number;
+  }[];
+}
+
+/**
+ * 静态分析选项接口
+ */
+export interface StaticAnalyzerOptions {
+  rootDir: string;
+  ignorePatterns?: string[];
+  cache?: any;
+  ruleSet?: string;
+  maxWorkers?: number;
+}
+
+/**
+ * 动态分析选项接口
+ */
+export interface DynamicAnalyzerOptions {
+  rootDir: string;
+  entryPoints: string[];
+  timeouts?: {
+    navigation: number;
+    idle: number;
+  };
+  headless: boolean;
+}
+
+/**
+ * 内存分析选项接口
+ */
+export interface MemoryAnalyzerOptions {
+  rootDir: string;
+  entryPoints: string[];
+  threshold: number;
+  snapshotCount: number;
+  interval: number;
+  headless: boolean;
+}
+
+/**
+ * 规则更新选项接口
+ */
+export interface RuleUpdateOptions {
+  registryUrl: string;
+  forceUpdate: boolean;
+  verifySignature: boolean;
+}
+
+/**
+ * 更新规则接口
+ */
+export interface UpdatedRule {
+  id: string;
+  name: string;
+  severity: string;
+  oldVersion: string;
+  newVersion: string;
+  changeType: 'NEW' | 'MAJOR' | 'MINOR' | 'PATCH';
+  changelog?: string;
+}
+
+/**
+ * 更新失败规则接口
+ */
+export interface FailedUpdate {
+  ruleId: string;
+  reason: string;
+}
+
+/**
+ * 规则更新结果接口
+ */
+export interface RuleUpdateResult {
+  updatedRules: UpdatedRule[];
+  failedUpdates: FailedUpdate[];
+  totalRules: number;
+  registryVersion?: string;
+  lastUpdateTime: number;
+}
+
+/**
+ * 修复选项接口
+ */
+export interface FixOptions {
+  file: string;
+  issueId: string;
+  fix: IssueFix;
+}
+
+/**
+ * 修复结果接口
+ */
+export interface FixResult {
+  successCount: number;
+  failedCount: number;
+  failures: {
+    file: string;
+    issueId: string;
+    reason: string;
+  }[];
+}

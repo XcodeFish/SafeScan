@@ -13,6 +13,27 @@ interface LRUCacheEntry<T> {
 }
 
 /**
+ * 缓存项接口
+ */
+interface CacheItem<T> {
+  value: T;
+  timestamp: number;
+  expiry?: number;
+}
+
+/**
+ * 内存缓存接口
+ */
+export interface MemoryCache<T = any> {
+  get(key: string): T | undefined;
+  set(key: string, value: T, ttl?: number): void;
+  has(key: string): boolean;
+  delete(key: string): boolean;
+  clear(): void;
+  size(): number;
+}
+
+/**
  * LRU缓存选项
  */
 export interface LRUCacheOptions {
@@ -250,4 +271,155 @@ export function estimateObjectSize(obj: any): number {
   }
 
   return 0;
+}
+
+/**
+ * LRU缓存选项
+ */
+interface CacheOptions {
+  maxSize?: number; // 最大项目数
+  maxMemory?: number; // 最大内存占用(MB)
+  defaultTTL?: number; // 默认过期时间(ms)
+  cleanupInterval?: number; // 自动清理间隔(ms)
+}
+
+/**
+ * 内存缓存实现
+ */
+class MemoryCacheImpl<T = any> implements MemoryCache<T> {
+  private cache: Map<string, CacheItem<T>>;
+  private maxSize: number;
+  private defaultTTL: number | undefined;
+  private cleanupTimer: NodeJS.Timeout | undefined;
+
+  constructor(options: CacheOptions = {}) {
+    this.cache = new Map();
+    this.maxSize = options.maxSize || 1000;
+    this.defaultTTL = options.defaultTTL;
+
+    // 设置自动清理
+    if (options.cleanupInterval) {
+      this.cleanupTimer = setInterval(() => {
+        this.cleanup();
+      }, options.cleanupInterval);
+    }
+  }
+
+  /**
+   * 获取缓存项
+   */
+  get(key: string): T | undefined {
+    const item = this.cache.get(key);
+
+    if (!item) {
+      return undefined;
+    }
+
+    // 检查是否过期
+    if (item.expiry && item.expiry < Date.now()) {
+      this.delete(key);
+      return undefined;
+    }
+
+    return item.value;
+  }
+
+  /**
+   * 设置缓存项
+   */
+  set(key: string, value: T, ttl?: number): void {
+    // 确保不超过最大大小
+    if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
+      // 移除最旧的项
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey) {
+        this.cache.delete(oldestKey);
+      }
+    }
+
+    const timestamp = Date.now();
+    let expiry: number | undefined = undefined;
+
+    if (ttl !== undefined) {
+      expiry = timestamp + ttl;
+    } else if (this.defaultTTL !== undefined) {
+      expiry = timestamp + this.defaultTTL;
+    }
+
+    this.cache.set(key, {
+      value,
+      timestamp,
+      expiry,
+    });
+  }
+
+  /**
+   * 检查是否存在缓存项
+   */
+  has(key: string): boolean {
+    const item = this.cache.get(key);
+
+    if (!item) {
+      return false;
+    }
+
+    // 检查是否过期
+    if (item.expiry && item.expiry < Date.now()) {
+      this.delete(key);
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * 删除缓存项
+   */
+  delete(key: string): boolean {
+    return this.cache.delete(key);
+  }
+
+  /**
+   * 清空缓存
+   */
+  clear(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * 获取缓存大小
+   */
+  size(): number {
+    return this.cache.size;
+  }
+
+  /**
+   * 清理过期项
+   */
+  private cleanup(): void {
+    const now = Date.now();
+    for (const [key, item] of this.cache.entries()) {
+      if (item.expiry && item.expiry < now) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  /**
+   * 销毁缓存，清除定时器
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = undefined;
+    }
+    this.clear();
+  }
+}
+
+/**
+ * 创建内存缓存
+ */
+export function createCache<T = any>(options: CacheOptions = {}): MemoryCache<T> {
+  return new MemoryCacheImpl<T>(options);
 }
