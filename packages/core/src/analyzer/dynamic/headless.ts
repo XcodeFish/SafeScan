@@ -49,6 +49,15 @@ interface IConsoleMessage {
   text(): string;
 }
 
+// 在其他接口定义之后添加请求接口
+interface IRequest {
+  url(): string;
+  method(): string;
+  resourceType(): string;
+  headers(): Record<string, string>;
+  continue(): void;
+}
+
 // 重命名类型以避免冲突
 type PuppeteerBrowser = IBrowser;
 type PuppeteerPage = IPage;
@@ -617,7 +626,8 @@ export class HeadlessBrowser {
       // 记录控制台日志
       if (this.config.logConsole) {
         this.consoleLogsMap.set(page, []);
-        page.on('console', (message: PuppeteerConsoleMessage) => {
+        page.on('console', (...args: unknown[]) => {
+          const message = args[0] as PuppeteerConsoleMessage;
           const logs = this.consoleLogsMap.get(page!) || [];
           logs.push(message);
           this.consoleLogsMap.set(page!, logs);
@@ -635,13 +645,15 @@ export class HeadlessBrowser {
       // 拦截网络请求
       if (this.config.interceptNetwork) {
         await page.setRequestInterception(true);
-        page.on('request', (request) => {
-          const url = request.url();
+        page.on('request', (request: unknown) => {
+          // 使用类型断言将unknown转换为我们需要的类型
+          const req = request as IRequest;
+          const url = req.url();
           testResult.networkLogs.push({
             url,
-            method: request.method(),
-            resourceType: request.resourceType(),
-            headers: request.headers(),
+            method: req.method(),
+            resourceType: req.resourceType(),
+            headers: req.headers(),
           });
 
           // 检查是否为不安全的请求
@@ -655,7 +667,7 @@ export class HeadlessBrowser {
             });
           }
 
-          request.continue();
+          req.continue();
         });
       }
 
@@ -830,7 +842,7 @@ export class HeadlessBrowser {
               if (step.selector && step.value) {
                 const textContent = await page.$eval(
                   step.selector,
-                  (el, value) => el.textContent?.includes(value),
+                  (el, value) => el.textContent?.includes(value as string),
                   step.value
                 );
                 stepResult.assertResult = !!textContent;

@@ -528,6 +528,16 @@ export class E2ETester {
 
     return true;
   }
+
+  /**
+   * 获取当前测试的断言是否全部通过
+   */
+  areAllAssertionsPassed(): boolean {
+    if (!this.currentResult) {
+      return false;
+    }
+    return this.currentResult.assertions.every((a) => a.passed);
+  }
 }
 
 /**
@@ -703,7 +713,7 @@ export const SecurityTestSuite = {
                 customFn: async (page) => {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const token = await page.evaluate(() => (window as any).extractedCSRFToken);
-                  return !!token && token.length > 0;
+                  return !!token && (token as string).length > 0;
                 },
               },
               {
@@ -716,8 +726,7 @@ export const SecurityTestSuite = {
 
           // 测试完成后验证断言结果
           tester.assert(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            tester.currentResult!.assertions.every((a) => a.passed),
+            tester.areAllAssertionsPassed(),
             'CSRF protection should be properly implemented'
           );
         },
