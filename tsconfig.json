@@ -19,7 +19,8 @@
       "@safescan/core/*": ["packages/core/src/*"],
       "@safescan/plugins/*": ["packages/plugins/src/*"],
       "@safescan/integrations/*": ["packages/integrations/src/*"],
-      "@safescan/rules/*": ["packages/rules/src/*"]
+      "@safescan/rules/*": ["packages/rules/src/*"],
+      "webpack": ["./node_modules/@types/webpack"]
     }
   },
   "exclude": ["node_modules", "dist", "**/dist"]
