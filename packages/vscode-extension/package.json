@@ -1,0 +1,89 @@
+{
+  "name": "@safescan/vscode-extension",
+  "displayName": "SafeScan",
+  "version": "0.1.0",
+  "description": "前端安全检测工具VSCode扩展",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Linters",
+    "Security"
+  ],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact",
+    "onLanguage:vue"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "safescan.scanActiveFile",
+        "title": "SafeScan: 扫描当前文件"
+      },
+      {
+        "command": "safescan.scanWorkspace",
+        "title": "SafeScan: 扫描整个工作区"
+      },
+      {
+        "command": "safescan.showIssuePanel",
+        "title": "SafeScan: 显示问题面板"
+      }
+    ],
+    "configuration": {
+      "title": "SafeScan",
+      "properties": {
+        "safescan.enableRealTimeAnalysis": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用实时代码分析"
+        },
+        "safescan.severityLevel": {
+          "type": "string",
+          "default": "warning",
+          "enum": [
+            "error",
+            "warning",
+            "info",
+            "hint"
+          ],
+          "description": "显示问题的最低严重性级别"
+        }
+      }
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "safescanIssues",
+          "name": "SafeScan 安全问题"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.2.0",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "14.x",
+    "@types/vscode": "^1.70.0",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
+    "@typescript-eslint/parser": "^5.31.0",
+    "eslint": "^8.20.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.0.0",
+    "typescript": "^4.7.4",
+    "vscode-test": "^1.6.1"
+  },
+  "dependencies": {
+    "@safescan/core": "workspace:*"
+  }
+}
