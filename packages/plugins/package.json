@@ -9,9 +9,23 @@
     "test": "jest",
     "lint": "eslint src --ext .ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@types/node": "^20.8.10"
+  },
+  "peerDependencies": {
+    "@safescan/core": "workspace:*",
+    "vite": "^2.9.0 || ^3.0.0 || ^4.0.0 || ^5.0.0"
+  },
   "devDependencies": {
-    "@types/node": "^20.8.10",
-    "typescript": "^5.2.2"
-  }
+    "@rollup/pluginutils": "^5.1.4",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "vite-plugin",
+    "safescan",
+    "security",
+    "hmr",
+    "runtime"
+  ]
 }
